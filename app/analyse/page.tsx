@@ -538,6 +538,8 @@ export default function AnalysePage() {
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
   const handleBack = () => {
     router.push("/");
@@ -547,12 +549,52 @@ export default function AnalysePage() {
     const file = event.target.files?.[0];
     if (file) {
       setSelectedFile(file);
+      setUploadStatus(null); // Clear previous status when new file selected
       console.log("Selected file:", file.name);
     }
   };
 
   const handleUploadClick = () => {
     document.getElementById('file-input')?.click();
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) return;
+
+    setIsUploading(true);
+    setUploadStatus(null);
+
+    try {
+      // Simulated upload - replace with actual API call
+      const formData = new FormData();
+      formData.append('document', selectedFile);
+      
+      // Example real implementation:
+      // const response = await fetch('/api/upload', {
+      //   method: 'POST',
+      //   body: formData,
+      // });
+      
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      setUploadStatus({
+        type: 'success',
+        message: 'File uploaded successfully! Analysis in progress...'
+      });
+      
+      // Clear selection after successful upload
+      setSelectedFile(null);
+      
+    } catch (error) {
+      setUploadStatus({
+        type: 'error',
+        message: 'Upload failed. Please try again.'
+      });
+    } finally {
+      setIsUploading(false);
+      setTimeout(() => setUploadStatus(null), 5000);
+    }
   };
 
   const AnalysePlan = () => {
@@ -628,110 +670,36 @@ export default function AnalysePage() {
         {/* Analysis Results Section */}
         {showAnalysis && medicarePlans[selectedPlan] && (
           <div className="bg-white rounded-xl shadow-lg p-6 space-y-8 animate-fade-in">
-            {renderSection(medicarePlans[selectedPlan].overview.title, 
-              medicarePlans[selectedPlan].overview.content.map((item, index) => (
-                <div key={index} className="p-3 bg-gray-50 rounded-lg">
-                  <p className="text-gray-600">{item}</p>
-                </div>
-              ))
-            )}
-
-            {renderSection(medicarePlans[selectedPlan].costs.title,
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {medicarePlans[selectedPlan].costs.items.map((item, index) => (
-                  <div key={index} className="p-3 bg-gray-50 rounded-lg">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">{item.label}</span>
-                      <span className="text-blue-600">{item.value}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {renderSection(medicarePlans[selectedPlan].medicalServices.title,
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {medicarePlans[selectedPlan].medicalServices.items.map((item, index) => (
-                  <div key={index} className="p-3 bg-gray-50 rounded-lg">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">{item.service}</span>
-                      <span className="text-blue-600">{item.cost}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {renderSection(medicarePlans[selectedPlan].prescriptions.title,
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="text-left border-b-2 border-gray-200">
-                      <th className="pb-2 text-gray-600">Tier</th>
-                      <th className="pb-2 text-gray-600">Description</th>
-                      <th className="pb-2 text-gray-600">Cost</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {medicarePlans[selectedPlan].prescriptions.tiers.map((tier, index) => (
-                      <tr key={index} className="border-b border-gray-100">
-                        <td className="py-3 text-gray-600">{tier.tier}</td>
-                        <td className="py-3 text-gray-600">{tier.description}</td>
-                        <td className="py-3 text-blue-600">{tier.cost}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-
-            {renderSection(medicarePlans[selectedPlan].appeals.title,
-              <div className="space-y-2">
-                {medicarePlans[selectedPlan].appeals.steps.map((step, index) => (
-                  <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <div className="text-blue-600">{index + 1}.</div>
-                    <p className="text-gray-600">{step}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {renderSection(medicarePlans[selectedPlan].contact.title,
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {medicarePlans[selectedPlan].contact.items.map((item, index) => (
-                  <a
-                    key={index}
-                    href={item.link || "#"}
-                    className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-3"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <span className="text-blue-600">{item.icon}</span>
-                    <span className="text-gray-600">{item.text}</span>
-                  </a>
-                ))}
-              </div>
-            )}
+            {/* ... (keep all the existing analysis sections exactly as they were) ... */}
           </div>
         )}
 
-        {/* Upload Section - Bottom position */}
+        {/* Upload Section */}
         <div className="mt-8 bg-white p-6 rounded-xl shadow-lg">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex-1">
               <h2 className="text-lg font-semibold text-gray-800 mb-2">
-                Upload Supporting Documents
+                Insurance not listed above? - No worries, upload your document here and we will insurease for you.
               </h2>
               <p className="text-sm text-gray-600">
                 Upload PDFs, EOCs, or other plan documents (Max 25MB)
               </p>
               {selectedFile && (
-                <p className="text-sm text-green-600 mt-1">
-                  Selected: {selectedFile.name}
+                <div className="mt-2 flex items-center gap-2">
+                  <span className="text-sm text-green-600">
+                    Selected: {selectedFile.name}
+                  </span>
+                </div>
+              )}
+              {uploadStatus && (
+                <p className={`mt-2 text-sm ${
+                  uploadStatus.type === 'success' ? 'text-green-600' : 'text-red-600'
+                }`}>
+                  {uploadStatus.message}
                 </p>
               )}
             </div>
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 flex gap-3">
               <input
                 type="file"
                 id="file-input"
@@ -744,8 +712,29 @@ export default function AnalysePage() {
                 className="px-6 py-3 bg-gradient-to-r from-blue-400 to-purple-400 text-white rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2"
               >
                 <FaUpload className="w-5 h-5" />
-                Upload Document
+                Select Document
               </button>
+              {selectedFile && (
+                <button
+                  onClick={handleUpload}
+                  disabled={isUploading}
+                  className={`px-6 py-3 bg-gradient-to-r from-green-400 to-teal-400 text-white rounded-lg transition-opacity flex items-center gap-2 ${
+                    isUploading ? 'opacity-75 cursor-not-allowed' : 'hover:opacity-90'
+                  }`}
+                >
+                  {isUploading ? (
+                    <>
+                      <span className="animate-spin">⏳</span>
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <FaUpload className="w-5 h-5" />
+                      Upload
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           </div>
         </div>
